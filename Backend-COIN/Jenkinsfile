@@ -1,0 +1,52 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Maven Build') {
+            steps{
+                echo 'Maven Build and Cobertura Stage'
+                sh '/opt/apache-maven-3.6.3/bin/mvn clean -DskipTests=true package'
+            }
+	    }
+
+	     stage('Jacoco Report') {
+                    steps{
+                        echo 'Jacoco Stage'
+                        sh '/opt/apache-maven-3.6.3/bin/mvn test'
+                    }
+                }
+
+	    stage('Image Clear'){
+	        steps{
+	            echo 'Image Clear Stage'
+	            sh "if (docker ps -a| grep coin) then (docker container stop coin && docker container rm coin) fi"
+                sh "if (docker images | grep coin) then (docker rmi \$(docker images coin -q)) fi"
+	        }
+	    }
+
+        stage('Image Build'){
+            steps{
+                echo 'Image Build Stage'
+                sh "docker build . -t coin:${BUILD_ID}"
+            }
+        }
+        stage('Deploy'){
+            steps{
+                sh "docker run -p 8001:8081 --name coin -v /log:/log -d coin:${BUILD_ID}"
+            }
+        }
+    }
+    post {
+            success {
+                // publish html
+                publishHTML target: [
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: false,
+                    keepAll: true,
+                    reportDir: 'target/coverage-reports/',
+                    reportFiles: 'index.html',
+                    reportName: 'Jacoco Report'
+                ]
+            }
+        }
+}

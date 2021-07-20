@@ -1,0 +1,23 @@
+{
+    "realObjectList": [
+        {
+            "ID": "1",
+    		"color": "#00ff00",
+    		"name": "当事人"
+        },
+        {
+            "ID": "2",
+    		"color": "#00ff00",
+    		"name": "委托书"
+        }
+    ],
+    "relationList": [
+        {
+    		"ID": "L1",
+    		"start": "1",
+   			"end": "2",
+    		"name": "提交",
+    		"isSolidline": true
+		}
+    ]
+}
